@@ -14,7 +14,6 @@ from OlistData..customers
 where customer_city like ' %' or customer_city like '% ' or customer_city like '%  %'
 
 
-
 --	2. GEOLOCATION
 select * from OlistData..geolocation
 
@@ -69,7 +68,6 @@ case
 end)
 
 
-
 --	3. ORDER_ITEMS
 select * from OlistData..order_items
 
@@ -90,7 +88,6 @@ UPDATE OlistData..order_items
 SET price = ROUND(price, 2), freight_value = ROUND(freight_value, 2)
 
 
-
 --	4. ORDER_PAYMENTS
 select * from OlistData..order_payments
 
@@ -102,7 +99,6 @@ where payment_type like ' %' or payment_type like '%  %' or payment_type like '%
 --formatting payment_value to two decimal points
 UPDATE OlistData..order_payments
 SET payment_value = ROUND(payment_value, 2)
-
 
 
 --	5. ORDER_REVIEWS
@@ -125,7 +121,6 @@ alter table order_reviews
 add review_answer_time time(0)
 update order_reviews
 set review_answer_time = CONVERT(time(0), review_answer_timestamp)
-
 
 
 --	6. ORDERS
@@ -173,7 +168,6 @@ order_delivered_carrier_time = CONVERT(time(0), order_delivered_carrier_date),
 order_delivered_customer_time = CONVERT(time(0), order_delivered_customer_date)
 
 
-
 --	7. PRODUCT_CATEGORY_NAME_TRANS
 select * from OlistData..product_category_name_trans
 
@@ -194,7 +188,6 @@ where product_category_name like '%category%'
 --insert 3 values into trans table
 insert into OlistData..product_category_name_trans (product_category_name, product_category_name_english)
 values ('no category', 'no_category'), ('pc_gamer', 'pc_games'), ('portateis_cozinha_e_preparadores_de_alimentos', 'kitchen_portables_and_food_preparators')
-
 
 
 --	8. PRODUCTS
@@ -238,7 +231,6 @@ product_weight_g = COALESCE(product_weight_g, 0),
 product_length_cm = COALESCE(product_length_cm, 0),
 product_height_cm = COALESCE(product_height_cm, 0),
 product_width_cm = COALESCE(product_width_cm, 0)
-
 
 
 --	9. SELLERS
