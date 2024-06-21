@@ -69,7 +69,7 @@ JOIN OlistData..orders ord
 	ON ord.order_id = it.order_id
 JOIN OlistData..order_payments pay
 	ON pay.order_id = ord.order_id
-WHERE ord.order_status <> 'canceled'
+WHERE ord.order_status <> 'canceled' AND prod.product_category_name_eng <> 'no_category'
 GROUP BY prod.product_category_name_eng
 ORDER BY 2 desc
 
@@ -93,17 +93,7 @@ GROUP BY YEAR(ord.order_purchase_date)
 HAVING DATEDIFF(MONTH, MIN(order_purchase_date), MAX(order_purchase_date)) >= 3
 ORDER BY 1
 
-/*	what is the distribution of seller ratings on olist and how does this impact sales performance?	*/
-select count(distinct order_id) from OlistData..order_items
-select count(distinct order_id) from OlistData..order_reviews
-select count(order_id) from OlistData..order_reviews
-select order_id, count(*) from OlistData..order_reviews group by order_id having count(order_id) > 1
-select order_id, count(*) from OlistData..order_reviews group by order_id having count(order_id) > 1 order by 1
-select order_id, payment_value from OlistData..order_payments order by 1
-select * from OlistData..order_reviews rev
-join OlistData..orders ord on ord.order_id = rev.order_id
-where order_status = 'canceled'
-
+/*	showing the distribution of seller ratings on olist	*/
 SELECT rev.review_score, COUNT(ord.order_id) orders_count,
 ROUND(SUM(pay.payment_value), 2) total_revenue, ROUND(AVG(pay.payment_value), 2) avg_revenue
 FROM OlistData..order_reviews rev
@@ -182,19 +172,8 @@ GROUP BY prod.product_category_name_eng
 ORDER BY 4 desc
 
 /*	finding the average order cancellation rate	*/
-SELECT ROUND((SELECT CAST(COUNT(*) as float) FROM OlistData..orders WHERE order_status = 'canceled')
-/COUNT(*) * 100, 2) avg_cancellation_rate,
-(SELECT SUM(payment_value)
-FROM OlistData..order_payments pay
-JOIN OlistData..orders ord ON ord.order_id = pay.order_id
-WHERE ord.order_status = 'canceled') amount_lost
+SELECT ROUND(CAST(COUNT(CASE WHEN order_status = 'canceled' THEN 1 END) as float)/COUNT(*) * 100, 2) avg_cancellation_rate
 FROM OlistData..orders
-SELECT ROUND(CAST(COUNT(CASE WHEN order_status = 'canceled' THEN 1 END) as float)/COUNT(*) * 100, 2)
-FROM OlistData..orders
-
-select count(order_id)
-from OlistData..orders
-where order_status = 'canceled'
 
 /*	showing top-selling products	*/
 --top selling products per year and quarter
@@ -213,6 +192,7 @@ ORDER BY 3 desc
 --most commonly used payment type
 SELECT payment_type, COUNT(DISTINCT order_id) orders_count
 FROM OlistData..order_payments
+WHERE payment_type <> 'not_defined'
 GROUP BY payment_type
 ORDER BY 2 desc
 
@@ -226,14 +206,6 @@ ORDER BY 3 desc
 
 --by geographic region
 	--by state
-SELECT cus.customer_state, pay.payment_type, COUNT(DISTINCT ord.order_id) orders_count
-FROM OlistData..orders ord
-JOIN OlistData..order_payments pay ON pay.order_id = ord.order_id
-JOIN OlistData..customers cus ON cus.customer_id = ord.customer_id
-JOIN OlistData..geolocation geo ON geo.geolocation_zip_code_prefix = cus.customer_zip_code_prefix
-GROUP BY cus.customer_state, pay.payment_type
-ORDER BY 3 desc
-
 SELECT geo.geolocation_state, pay.payment_type, COUNT(DISTINCT ord.order_id) orders_count
 FROM OlistData..orders ord
 JOIN OlistData..order_payments pay ON pay.order_id = ord.order_id
@@ -250,24 +222,6 @@ JOIN OlistData..geolocation geo ON geo.geolocation_zip_code_prefix = cus.custome
 GROUP BY cus.customer_city, pay.payment_type
 ORDER BY 3 desc
 
-SELECT geo.geolocation_state, pay.payment_type, COUNT(DISTINCT ord.order_id) orders_count
-FROM OlistData..orders ord
-JOIN OlistData..order_payments pay ON pay.order_id = ord.order_id
-JOIN OlistData..customers cus ON cus.customer_id = ord.customer_id
-JOIN OlistData..geolocation geo ON geo.geolocation_zip_code_prefix = cus.customer_zip_code_prefix
-GROUP BY geo.geolocation_state, pay.payment_type
-ORDER BY 3 desc
-
-/*	how do customers reviews and rating affect sales and product performance on olist?	*/
-SELECT rev.review_score, COUNT(it.order_id) products_sold, ROUND(SUM(pay.payment_value), 2) total_revenue
-FROM OlistData..order_items it
-JOIN OlistData..order_reviews rev ON rev.order_id = it.order_id
-JOIN OlistData..order_payments pay ON pay.order_id = it.order_id
-JOIN OlistData..orders ord ON ord.order_id = it.order_id
-WHERE ord.order_status <> 'canceled'
-GROUP BY rev.review_score
-ORDER BY 3 desc
-
 /*	showing product categories which have the highest profit margins on olist	*/
 SELECT prod.product_category_name_eng, ROUND(SUM(it.price), 2) total_price,
 ROUND(SUM(it.freight_value), 2) total_shipping_cost, ROUND(SUM(pay.payment_value), 2) total_revenue,
@@ -279,23 +233,12 @@ JOIN OlistData..order_payments pay ON pay.order_id = it.order_id
 GROUP BY prod.product_category_name_eng
 ORDER BY 6 desc
 
-/*	finding geolocation having high customer density	*/
-select * from customers
-select customer_unique_id, count(*) from OlistData..customers group by customer_unique_id order by 2 desc
-select * from OlistData..orders
-
+/*	showing geolocation having high customer density	*/
 --total customers per state
 SELECT customer_state, COUNT(DISTINCT customer_id) total_customers
 FROM OlistData..customers
 GROUP BY customer_state
 ORDER BY 2 desc
-
-SELECT cus.customer_unique_id, cus.customer_state, COUNT(ord.order_id) orders_count
-FROM OlistData..customers cus
-JOIN OlistData..orders ord ON ord.customer_id = cus.customer_id
-GROUP BY cus.customer_unique_id, cus.customer_state
-HAVING COUNT(ord.order_id) > 1
-ORDER BY 3 desc
 
 SELECT geo.geolocation_state, COUNT(DISTINCT cus.customer_unique_id) customers_count,
 COUNT(DISTINCT ord.order_id) orders_count
