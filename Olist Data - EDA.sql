@@ -210,18 +210,6 @@ GROUP BY prod.product_category_name_eng, YEAR(ord.order_purchase_date), DATEPART
 ORDER BY 3 desc
 
 /*	which payment methods are the most commonly used by olist customers and how does this vary by product category or geographic region?	*/
-select * from OlistData..order_payments
-select * from OlistData..products
-select * from OlistData..order_items
-select order_id, count(*) from OlistData..order_items group by order_id having count(*)>1 order by 2 desc
-select order_id, count(*) from OlistData..order_payments group by order_id having count(*)>1 order by 2 desc
-select * from OlistData..order_items where order_id = '8272b63d03f5f79c56e9e4120aec44ef'
-select * from OlistData..order_payments where order_id = 'fa65dad1b0e818e3ccc5cb0e39231352'
-select * from OlistData..order_payments where order_id = '8272b63d03f5f79c56e9e4120aec44ef'
-select * from OlistData..customers
-select distinct customer_state from OlistData..customers
-select order_id, count(*) from OlistData..orders group by order_id having count(*)>1 order by 2 desc
-
 --most commonly used payment type
 SELECT payment_type, COUNT(DISTINCT order_id) orders_count
 FROM OlistData..order_payments
