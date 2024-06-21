@@ -220,9 +220,7 @@ select * from OlistData..order_payments where order_id = 'fa65dad1b0e818e3ccc5cb
 select * from OlistData..order_payments where order_id = '8272b63d03f5f79c56e9e4120aec44ef'
 select * from OlistData..customers
 select distinct customer_state from OlistData..customers
-select * from OlistData..orders
 select order_id, count(*) from OlistData..orders group by order_id having count(*)>1 order by 2 desc
-select * from OlistData..geolocation
 
 --most commonly used payment type
 SELECT payment_type, COUNT(DISTINCT order_id) orders_count
